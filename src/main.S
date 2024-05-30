@@ -38,6 +38,8 @@ init:
   li s2, 1  # Mode 2: LED bật đầu tiên
   li s3, 0  # Mode3, 4: Số hiện đầu tiên
   la s4, digits
+  li s5, 4  # Số mode
+  li s6, 10000000 # Tốc độ mặc định
 
   # Thiết lập chức năng các chân GPIO4, GPIO5, GPIO6, GPIO7
   # Mặc định các chân này được sử dụng cho giao thức SPI
@@ -85,20 +87,41 @@ main_loop:
 
   j check_mode
 
-PB1_pressed:
+PB1_pressed:          
+  # Khởi tạo lại các giá trị mặc định
+  li s1, 0  # Mode 1: Trạng thái LED1
+  li s2, 1  # Mode 2: LED bật đầu tiên
+  li s3, 0  # Mode3, 4: Số hiện đầu tiên
+
+  # Tăng mode
+  addi s0, s0, 1      
+  addi t0, s5, 1
+  bne s0, t0, check_mode
   li s0, 1
   j check_mode
 
-PB2_pressed:
-  li s0, 2
+PB2_pressed:          
+  # Khởi tạo lại các giá trị mặc định
+  li s1, 0  # Mode 1: Trạng thái LED1
+  li s2, 1  # Mode 2: LED bật đầu tiên
+  li s3, 0  # Mode3, 4: Số hiện đầu tiên
+
+  # Giảm mode
+  addi s0, s0, -1
+  bne s0, zero, check_mode
+  addi s0, s5, 0
   j check_mode
 
-PB3_pressed:
-  li s0, 3
+PB3_pressed:          # Tăng tốc độ
+  li t0, 625000
+  beq s6, t0, check_mode
+  srli s6, s6, 1
   j check_mode
 
-PB4_pressed:
-  li s0, 4
+PB4_pressed:          # Giảm tốc độ
+  li t0, 160000000
+  beq s6, t0, check_mode
+  slli s6, s6, 1
   j check_mode
 
 check_mode:  
@@ -143,6 +166,13 @@ mode_3:
   j next
 
 mode_4:
+  addi a2, s2, 0
+  call fun_update_leds
+
+  addi s2, s2, 1
+  li t2, 0x100
+  bne s2, t2, next
+  li s2, 1
   j next
 
 next:
@@ -161,7 +191,8 @@ fun_update_leds:
   li a1, GPIO_OUT_REG
   sw a2, 0(a1) 
 
-  li a0, 10000000
+
+  mv a0, s6
   call fun_delay
 
   lw a1, 8(sp)
