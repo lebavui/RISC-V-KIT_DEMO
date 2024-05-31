@@ -24,11 +24,13 @@
 
 .eqv GPIO8, 0x100
 .eqv GPIO9, 0x200
+.eqv GPIO10, 0x400
 .eqv GPIO20, 0x100000
 .eqv GPIO21, 0x200000
 
 .data
-  digits: .word 0xC0, 0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82, 0xF8, 0x80, 0x90
+#  digits: .word 0xC0, 0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82, 0xF8, 0x80, 0x90
+  digits: .word 0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F
 
 .text
 init:
@@ -69,13 +71,13 @@ main_loop:
   li a1, GPIO_IN_REG    # Đọc trạng thái các chân GPIO
   lw a2, 0(a1)
 
-  li a3, GPIO8
-  and a4, a2, a3       # Kiểm tra GPIO8
-  beq a4, zero, PB1_pressed   # Nếu GPIO8 = 0
-  
   li a3, GPIO9
   and a4, a2, a3       # Kiểm tra GPIO9
-  beq a4, zero, PB2_pressed   # Nếu GPIO9 = 0
+  beq a4, zero, PB1_pressed   # Nếu GPIO9 = 0
+  
+  li a3, GPIO10
+  and a4, a2, a3       # Kiểm tra GPIO10
+  beq a4, zero, PB2_pressed   # Nếu GPIO10 = 0
 
   li a3, GPIO20
   and a4, a2, a3       # Kiểm tra GPIO20
